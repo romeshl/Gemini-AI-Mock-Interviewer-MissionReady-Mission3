@@ -5,10 +5,20 @@ import "./App.css";
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
+const model = genAI.getGenerativeModel({
+  model: "gemini-1.5-flash",
+  systemInstruction: "You are a mock interviewer for the position of web developer.and give feedback.",
+ });
 
+const chat = model.startChat({
+  history: [], // Start with an empty history
+  generationConfig: {
+    maxOutputTokens: 500,
+  },
+});
 
 function App() {
-  
+
   type Message = {
     text: string;
     user: boolean;
@@ -20,14 +30,7 @@ function App() {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-  const chat = model.startChat({
-    history: [], // Start with an empty history
-    generationConfig: {
-      maxOutputTokens: 500,
-    },
-  });
 
   useEffect(() => {
     const element = containerRef.current;
