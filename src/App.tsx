@@ -4,18 +4,18 @@ import ReactMarkdown from "react-markdown";
 import "./App.css";
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
+
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
+
 const model = genAI.getGenerativeModel({
   model: "gemini-1.5-pro",
   systemInstruction: {
     role: "Interviewer",
     parts: [
       { text: "Job role will be entered in the first user input" },
-      {
-        text:
+      { text:
           "ignore the greetings. if the first input is not a valid job role," +
-          " send a message to the user and say 'Ending interview. Try again with a valid job title.'.",
-      },
+          " send a message to the user and say 'Ending interview. Try again with a valid job title.'."},
       {
         text: "start by welcoming to the interview and asking the user's name and his background.",
       },
@@ -83,10 +83,10 @@ function App() {
 
   return (
     <div className="flex flex-col justify-center items-center h-screen bg-gradient-to-r from-blue-500 to-blue-900">
-      <h1 className="mb-8 font-bold text-[2rem] drop-shadow-lg text-blue-50">
+      <h1 className="mb-8 font-bold text-[2rem] text-blue-50 [text-shadow:_3px_3px_0_rgb(0_0_255_/_40%)]">
         Gemini AI - Mock Interviewer
       </h1>
-      <div className="bg-white w-full max-w-lg shadow-lg rounded-lg overflow-hidden">
+      <div className="bg-white w-full max-w-lg rounded-lg overflow-hidden shadow-gray-700 shadow-lg">
         <div className="mt-1 p-4 h-96 overflow-y-scroll" ref={containerRef}>
           {messages.map((msg, index) => (
             <div
