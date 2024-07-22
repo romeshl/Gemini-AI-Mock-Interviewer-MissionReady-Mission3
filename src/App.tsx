@@ -6,9 +6,31 @@ import "./App.css";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash",
-  systemInstruction: "You are a mock interviewer for the position of web developer.and give feedback.",
- });
+  model: "gemini-1.5-pro",
+  systemInstruction: {
+    role: "Interviewer",
+    parts: [
+      { text: "Job role will be entered in the first user input" },
+      {
+        text:
+          "ignore the greetings. if the first input is not a valid job role," +
+          " send a message to the user and say 'Ending interview. Try again with a valid job title.'.",
+      },
+      {
+        text: "start by welcoming to the interview and asking the user's name and his background.",
+      },
+      { text: "ask 2 questions. one question at a time." },
+      { text: "don't mark the question like 'question 1' etc." },
+      {
+        text: "if the user doesn't answer the questions accordingly, ask the question again.",
+      },
+      {
+        text: "provide feedback about quality of the answers and where user can improve himself on.",
+      },
+      { text: "end with 'Best of luck' and the name of the user." },
+    ],
+  },
+});
 
 const chat = model.startChat({
   history: [], // Start with an empty history
@@ -18,7 +40,6 @@ const chat = model.startChat({
 });
 
 function App() {
-
   type Message = {
     text: string;
     user: boolean;
@@ -29,8 +50,6 @@ function App() {
   const [loading, setLoading] = useState<boolean>(false);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
-
-
 
   useEffect(() => {
     const element = containerRef.current;
@@ -47,13 +66,10 @@ function App() {
       try {
         setLoading(true);
         const result = await chat.sendMessage(input);
-        const response = await result.response;
-        const text = await response.text();
-        console.log("AI: ", text);
+        const response = result.response;
+        const text = response.text();
         setLoading(false);
         setMessages([...newMessages, { text: text, user: false }]);
-
-        console.log(chat.getHistory());
       } catch (error) {
         console.error("Error sending message:", error);
         setLoading(false);
@@ -75,12 +91,14 @@ function App() {
           {messages.map((msg, index) => (
             <div
               key={index}
-              className={`flex ${msg.user ? "justify-end" : "justify-start"
-                } mb-2`}
+              className={`flex ${
+                msg.user ? "justify-end" : "justify-start"
+              } mb-2`}
             >
               <div
-                className={`rounded-lg p-2 shadow-md overflow-x-hidden flex flex-wrap ${msg.user ? "bg-blue-500 text-white" : "bg-gray-200"
-                  }`}
+                className={`rounded-lg p-2 shadow-md overflow-x-hidden flex flex-wrap ${
+                  msg.user ? "bg-blue-500 text-white" : "bg-gray-200"
+                }`}
               >
                 <ReactMarkdown>{msg.text}</ReactMarkdown>
               </div>
