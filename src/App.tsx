@@ -3,6 +3,8 @@ import { FaPaperPlane } from "react-icons/fa";
 import ReactMarkdown from "react-markdown";
 import "./App.css";
 
+const NUMBER_OF_QUESTIONS = 2;
+
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize Google Generative AI with API key from environment variables
@@ -23,7 +25,7 @@ const model = genAI.getGenerativeModel({
             {
                 text: "start by welcoming to the interview and asking the user's name and his background.",
             },
-            { text: "ask 2 questions. one question at a time." },
+            { text: "ask " + NUMBER_OF_QUESTIONS + " questions. one question at a time." },
             { text: "don't mark the question like 'question 1' etc." },
             {
                 text: "if the user doesn't answer the questions accordingly, ask the question again.",
