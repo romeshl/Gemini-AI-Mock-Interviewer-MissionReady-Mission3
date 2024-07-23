@@ -3,7 +3,7 @@ import { FaPaperPlane } from "react-icons/fa";
 import ReactMarkdown from "react-markdown";
 import "./App.css";
 
-const NUMBER_OF_QUESTIONS = 2;
+const NUMBER_OF_QUESTIONS = 2; // Holds the number of questions to be asked from the interviewee
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
