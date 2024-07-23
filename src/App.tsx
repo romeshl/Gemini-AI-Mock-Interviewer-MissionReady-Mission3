@@ -25,7 +25,12 @@ const model = genAI.getGenerativeModel({
             {
                 text: "start by welcoming to the interview and asking the user's name and his background.",
             },
-            { text: "ask " + NUMBER_OF_QUESTIONS + " questions. one question at a time." },
+            {
+                text:
+                    "ask " +
+                    NUMBER_OF_QUESTIONS +
+                    " questions. one question at a time.",
+            },
             { text: "don't mark the question like 'question 1' etc." },
             {
                 text: "if the user doesn't answer the questions accordingly, ask the question again.",
@@ -216,6 +221,7 @@ function App() {
                                 e.key === "Enter" && handleSendMessage()
                             }
                             autoFocus
+                            readOnly={loading}
                         />
                         <button
                             className="ml-2 bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-all"
