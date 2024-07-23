@@ -5,8 +5,10 @@ import "./App.css";
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+// Initialize Google Generative AI with API key from environment variables
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
 
+// Configure the generative AI model with specific instructions
 const model = genAI.getGenerativeModel({
     model: "gemini-1.5-pro",
     systemInstruction: {
@@ -34,6 +36,7 @@ const model = genAI.getGenerativeModel({
     },
 });
 
+// Start a chat session with the generative AI model
 const chat = model.startChat({
     history: [], // Start with an empty history
     generationConfig: {
@@ -47,23 +50,23 @@ function App() {
         user: boolean;
     };
 
+    // State hooks for managing messages, input, loading state, interview start, and job title
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const [startInterview, setStartInterview] = useState<boolean>(false);
     const [jobTitle, setJobTitle] = useState<string>("");
 
+    // Refs for container and job title input field
     const containerRef = useRef<HTMLDivElement | null>(null);
     const JobTitleRef = useRef<HTMLInputElement | null>(null);
 
+    // Focus the job title input field when the component mounts
     useEffect(() => {
         JobTitleRef.current?.focus();
     }, []);
 
-    useEffect(() => {
-        console.log(messages);
-    }, [messages]);
-
+    // Scroll to the bottom of the container whenever input changes
     useEffect(() => {
         const element = containerRef.current;
         if (element) {
@@ -71,6 +74,7 @@ function App() {
         }
     }, [input]);
 
+    // Begin the interview process
     async function beginInterview(): Promise<void> {
         if (!jobTitle.trim()) {
             JobTitleRef.current?.focus();
@@ -86,8 +90,10 @@ function App() {
             { text: AIResponse, user: false },
         ]);
         setLoading(false);
+        handleAIErrors(AIResponse);
     }
 
+    // Handle sending user messages and receiving AI responses
     const handleSendMessage = async () => {
         if (input.trim()) {
             // Add the user's message to the state
@@ -111,18 +117,25 @@ function App() {
 
             // Set loading to false
             setLoading(false);
-            if (
-                AIResponse.includes("Ending interview") ||
-                AIResponse.includes("Best of luck")
-            ) {
-                setStartInterview(false);
-                JobTitleRef.current!.value = "";
-                setJobTitle("");
-                JobTitleRef.current?.focus();
-            }
+            handleAIErrors(AIResponse);
         }
     };
 
+    // Handle specific AI error messages
+    function handleAIErrors(error: string) {
+        if (
+            error.includes("Ending interview") ||
+            error.includes("Best of luck") ||
+            error.includes("Error")
+        ) {
+            setStartInterview(false);
+            JobTitleRef.current!.value = "";
+            setJobTitle("");
+            JobTitleRef.current?.focus();
+        }
+    }
+
+    // Function to get AI response for a given input
     async function getAIResponse(chatInput: string): Promise<string> {
         try {
             const result = await chat.sendMessage(chatInput);
@@ -131,7 +144,7 @@ function App() {
             return text;
         } catch (error) {
             console.error("Error sending message:", error);
-            return "Error";
+            return "Error: unable to get a response from AI.";
         }
     }
 
@@ -140,10 +153,10 @@ function App() {
             <h1 className="mb-5 font-bold text-[2rem] text-blue-50 [text-shadow:_3px_3px_0_rgb(0_0_0_/_20%)]">
                 Gemini AI - Mock Interviewer
             </h1>
-            <div className="flex mb-3 p-4 bg-white rounded-lg w-[512px] gap-2 shadow-gray-700 shadow-md items-center">
-                <h2 className="font-bold text-gray-600">Job Title: </h2>
+            <div className="flex mb-3 p-4 bg-blue-50 rounded-lg w-[512px] gap-2 shadow-gray-700 shadow-md items-center">
+                <h2 className="font-bold text-blue-800">Job Title: </h2>
                 <input
-                    className="bg-gray-100 border border-gray-300 rounded-md w-[400px] p-1
+                    className="bg-white border border-gray-300 rounded-md w-[400px] p-1
           focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-transparent"
                     type="text"
                     placeholder="Enter job title"
@@ -179,7 +192,7 @@ function App() {
                     {loading && <div className={"loader"}></div>}
                 </div>
                 {!startInterview ? (
-                    <div className="flex justify-center p-4 border-t border-gray-200 flex">
+                    <div className="flex justify-center p-4 border-t border-gray-200 bg-blue-50">
                         <button
                             className="p-2 border border-blue-500 w-[200px] rounded-lg bg-blue-500 text-white font-bold shadow-sm shadow-gray-700
         active:bg-blue-300 active:border-blue-300 active:shadow-gray-100 active:shadow-md active:text-blue-700
@@ -190,7 +203,7 @@ function App() {
                         </button>
                     </div>
                 ) : (
-                    <div className="p-4 border-t border-gray-200 flex">
+                    <div className="bg-blue-50 p-4 border-t border-gray-200 flex">
                         <input
                             type="text"
                             className="flex-1 p-2 border border-gray-300 rounded-lg outline-none"
