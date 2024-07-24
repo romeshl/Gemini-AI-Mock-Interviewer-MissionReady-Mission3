@@ -132,7 +132,7 @@ function App() {
       // this checks to see if it's the first time message list being updated
       let firstTime = true;
       // get the current length of the messages list to determine the index of the new message
-      const messagesQueueLength = messages.size;
+      let messagesQueueLength = messages.size;
       // Iterate over the stream of responses
       for await (const chunk of result.stream) {
         const chunkText = chunk.text();
