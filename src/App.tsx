@@ -210,19 +210,19 @@ function App() {
 
       <div className="bg-white w-full max-w-lg rounded-lg overflow-hidden shadow-gray-700 shadow-lg">
         <div className="mt-1 p-4 h-96 overflow-y-scroll" ref={containerRef}>
-          {messages && messages?.map((msg, index) => (
+          {messages?.map((msg, index) => (
             <div
               key={index}
               className={`flex ${
-                msg.get("user") ? "justify-end" : "justify-start"
+                msg?.get("user") ? "justify-end" : "justify-start"
               } mb-2`}
             >
               <div
                 className={`rounded-lg p-2 shadow-md overflow-x-hidden flex flex-wrap ${
-                  msg.get("user") ? "bg-blue-500 text-white" : "bg-gray-200"
+                  msg?.get("user") ? "bg-blue-500 text-white" : "bg-gray-200"
                 }`}
               >
-                <ReactMarkdown>{msg.get("input")?.toString()}</ReactMarkdown>
+                <ReactMarkdown>{msg?.get("input")?.toString()}</ReactMarkdown>
               </div>
             </div>
           ))}
