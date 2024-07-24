@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useReducer } from "react";
 import { FaPaperPlane } from "react-icons/fa";
 import ReactMarkdown from "react-markdown";
-import { List, Map } from "immutable";
 import "./App.css";
 
 // Holds the number of questions to be asked from the interviewee
@@ -52,13 +51,55 @@ const chat = model.startChat({
   },
 });
 
+// Define the structure of your data
+interface Data {
+  text: string;
+  user: boolean;
+}
+
+// Define action types
+type Action =
+  | { type: "ADD_ITEM"; payload: Data }
+  | { type: "UPDATE_ITEM"; index: number; payload: Data }
+  | { type: "CLEAR_ITEMS" };
+
+// Define the initial state
+const initialState: Data[] = [];
+
+// Reducer function
+const reducer = (state: Data[], action: Action): Data[] => {
+  switch (action.type) {
+    case "ADD_ITEM":
+      return [...state, action.payload];
+    case "UPDATE_ITEM":
+      //  return state.update(action.index, () => Map(action.payload));
+      return state.map((item, index) =>
+        index === action.index ? action.payload : item
+      );
+    case "CLEAR_ITEMS":
+      //  return initialState;
+      return initialState;
+    default:
+      return state;
+  }
+};
+
 // Main App component
 function App() {
-  // Define the state variables
-  // messages: List of messages to be displayed in the chat
-  const [messages, setMessages] = useState<List<Map<string, string | boolean>>>(
-    List()
-  );
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  const addItem = (item: Data) => {
+    dispatch({ type: "ADD_ITEM", payload: item });
+  };
+
+  const updateItem = (index: number, item: Data) => {
+    dispatch({ type: "UPDATE_ITEM", index, payload: item });
+  };
+
+  const clearItems = () => {
+    dispatch({ type: "CLEAR_ITEMS" });
+  };
+
   // input: The current input message from the user
   const [input, setInput] = useState<string>("");
   // loading: Boolean to indicate if the AI is processing the input
@@ -67,16 +108,25 @@ function App() {
   const [startInterview, setStartInterview] = useState<boolean>(false);
   // jobTitle: The job title entered by the user
   const [jobTitle, setJobTitle] = useState<string>("");
+  const [messageQueueLength, setMessageQueueLength] = useState<number>(0);
 
   // Refs for the container for holding user and AI messages
   const containerRef = useRef<HTMLDivElement | null>(null);
   // Ref for the job title input field
   const JobTitleRef = useRef<HTMLInputElement | null>(null);
 
+  //const messageQueueLengthRef = useRef<number>(messageQueueLength);
+
   // Focus the job title input field when the component mounts
   useEffect(() => {
     JobTitleRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    console.log(state.length);
+    //   messageQueueLengthRef.current = state.length;
+    setMessageQueueLength(state.length);
+  }, [state]);
 
   // Scroll to the bottom of the container whenever input changes
   useEffect(() => {
@@ -87,23 +137,22 @@ function App() {
   }, [input]);
 
   // Begin the interview process
-  async function beginInterview(): Promise<void> {
-    // Check if the job title is empty
+  const beginInterview = async () => {
     if (!jobTitle.trim()) {
       JobTitleRef.current?.focus();
       return;
     }
-    setMessages(List()); // Clear the messages
-    const newItem = Map({ input: "", user: false });
-    setMessages((prevItems) => prevItems.set(0, newItem));
+    clearItems();
+
     setStartInterview(true); // Set the interview to started
     setLoading(true);
-    // Send the job title to the AI get the first response
+    setMessageQueueLength(0);
+
     const AIResponse = await getAIResponse(jobTitle);
     setLoading(false);
     // Handle any errors in the AI response
     handleAIErrors(AIResponse);
-  }
+  };
 
   // Handle sending user messages and receiving AI responses
   const handleSendMessage = async () => {
@@ -112,8 +161,11 @@ function App() {
       return;
     }
     // Add the user's message to the messages list
-    const newItem = Map({ input: input, user: true });
-    setMessages((prevItems) => prevItems.push(newItem));
+    // const newItem = Map({ input: input, user: true });
+    // setMessages((prevItems) => prevItems.push(newItem));
+
+    addItem({ text: input, user: true });
+
     setInput(""); // Clear the input field
     setLoading(true);
     // Get the AI response for the user input
@@ -132,35 +184,20 @@ function App() {
       // this checks to see if it's the first time message list being updated
       let firstTime = true;
       // get the current length of the messages list to determine the index of the new message
-      let messagesQueueLength = messages.size;
+
       // Iterate over the stream of responses
       for await (const chunk of result.stream) {
         const chunkText = chunk.text();
         text += chunkText;
-        // if there are no messages in the list, add the first message
-        // and keep updating it as the AI sends more messages
-        if (messagesQueueLength === 0) {
-          const newItem = Map({ input: text, user: false });
-          setMessages((prevItems) => prevItems.set(0, newItem));
-        } else {
-          // if there are messages in the list, add the new messages to the end
-          if (firstTime) {
-            // after the first message is added, set firstTime to false
-            firstTime = false;
-            const newItem = Map({ input: text, user: false });
-            setMessages((prevItems) => prevItems.push(newItem));
-          } else {
-            // once added a new message in the previous section keep updating the last message
-            // as more messages are sent by the AI
-            const newItem = Map({ input: text, user: false });
-            // messageQueueLength holds the original number of messages in the list
-            // we add 1 item to the list
-            // so we add +1 to get the index of the last message in the list
-            setMessages((prevItems) =>
-              prevItems.set(messagesQueueLength + 1, newItem)
-            );
-          }
+        if (firstTime) {
+          addItem({ text: text, user: false });
+          firstTime = false;
         }
+        if (messageQueueLength === 0) {
+          console.log("Second time");
+          updateItem(0, { text: text, user: false });
+        } else updateItem(messageQueueLength + 1, { text: text, user: false });
+        console.log("message queue length in the for loop", messageQueueLength);
       }
       // return the final response from the AI for further processing
       return text;
@@ -169,8 +206,9 @@ function App() {
       console.error("Error sending message:", error);
       const text = "Error: unable to get a response from AI.";
       // add the error message to the messages list
-      const newItem = Map({ input: text, user: false });
-      setMessages((prevItems) => prevItems.push(newItem));
+      // const newItem = Map({ input: text, user: false });
+      // setMessages((prevItems) => prevItems.push(newItem));
+      addItem({ text: text, user: false });
       // return the error message for further processing
       return text;
     }
@@ -187,6 +225,7 @@ function App() {
       JobTitleRef.current!.value = "";
       setJobTitle("");
       JobTitleRef.current?.focus();
+      setMessageQueueLength(0);
     }
   }
 
@@ -210,19 +249,19 @@ function App() {
 
       <div className="bg-white w-full max-w-lg rounded-lg overflow-hidden shadow-gray-700 shadow-lg">
         <div className="mt-1 p-4 h-96 overflow-y-scroll" ref={containerRef}>
-          {messages?.map((msg, index) => (
+          {state?.map((msg, index) => (
             <div
               key={index}
               className={`flex ${
-                msg?.get("user") ? "justify-end" : "justify-start"
+                msg?.user ? "justify-end" : "justify-start"
               } mb-2`}
             >
               <div
                 className={`rounded-lg p-2 shadow-md overflow-x-hidden flex flex-wrap ${
-                  msg?.get("user") ? "bg-blue-500 text-white" : "bg-gray-200"
+                  msg?.user ? "bg-blue-500 text-white" : "bg-gray-200"
                 }`}
               >
-                <ReactMarkdown>{msg?.get("input")?.toString()}</ReactMarkdown>
+                <ReactMarkdown>{msg?.text?.toString()}</ReactMarkdown>
               </div>
             </div>
           ))}
