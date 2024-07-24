@@ -1,25 +1,19 @@
+/* HTML: <div class="loader"></div> */
 .loader {
-  width: 50px;
-  aspect-ratio: 1;
-  display: grid;
-  border-radius: 50%;
-  background: conic-gradient(#25b09b 25%,#f03355 0 50%,#514b82 0 75%,#ffa516 0);
-  animation: l22 2s infinite linear;
+  height: 10px;
+  width: 90px;
+  --c:no-repeat linear-gradient(#515acf 0 0);
+  background: var(--c), var(--c), var(--c), var(--c);
+  background-size: 26% 3px;
+  animation: l2 1s infinite;
   margin: 0 auto;
 }
-.loader::before,
-.loader::after {
-   content: "";
-   grid-area: 1/1;
-   margin: 15%;
-   border-radius: 50%;
-   background: inherit;
-   animation: inherit;
-}
-.loader::after {
-   margin: 25%;
-   animation-duration: 3s;
-}
-@keyframes l22 {
-  100% {transform: rotate(1turn)}
+@keyframes l2 {
+  0%,
+  70%,
+  100% {background-position: calc(0*100%/3) 100%,calc(1*100%/3) 100%,calc(2*100%/3) 100%,calc(3*100%/3) 100%}
+  14%  {background-position: calc(0*100%/3) 0   ,calc(1*100%/3) 100%,calc(2*100%/3) 100%,calc(3*100%/3) 100%}
+  28%  {background-position: calc(0*100%/3) 100%,calc(1*100%/3) 0   ,calc(2*100%/3) 100%,calc(3*100%/3) 100%}
+  42%  {background-position: calc(0*100%/3) 100%,calc(1*100%/3) 100%,calc(2*100%/3) 0   ,calc(3*100%/3) 100%}
+  56%  {background-position: calc(0*100%/3) 100%,calc(1*100%/3) 100%,calc(2*100%/3) 100%,calc(3*100%/3) 0   }
 }
