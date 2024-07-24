@@ -51,54 +51,15 @@ const chat = model.startChat({
   },
 });
 
-// Define the structure of your data
-interface Data {
-  text: string;
-  user: boolean;
-}
-
-// Define action types
-type Action =
-  | { type: "ADD_ITEM"; payload: Data }
-  | { type: "UPDATE_ITEM"; index: number; payload: Data }
-  | { type: "CLEAR_ITEMS" };
-
-// Define the initial state
-const initialState: Data[] = [];
-
-// Reducer function
-const reducer = (state: Data[], action: Action): Data[] => {
-  switch (action.type) {
-    case "ADD_ITEM":
-      return [...state, action.payload];
-    case "UPDATE_ITEM":
-      //  return state.update(action.index, () => Map(action.payload));
-      return state.map((item, index) =>
-        index === action.index ? action.payload : item
-      );
-    case "CLEAR_ITEMS":
-      //  return initialState;
-      return initialState;
-    default:
-      return state;
-  }
-};
 
 // Main App component
 function App() {
-  const [state, dispatch] = useReducer(reducer, initialState);
-
-  const addItem = (item: Data) => {
-    dispatch({ type: "ADD_ITEM", payload: item });
-  };
-
-  const updateItem = (index: number, item: Data) => {
-    dispatch({ type: "UPDATE_ITEM", index, payload: item });
-  };
-
-  const clearItems = () => {
-    dispatch({ type: "CLEAR_ITEMS" });
-  };
+  interface Data {
+    text: string;
+    user: boolean;
+  }
+  
+  const [messages, setMessages] = useState<Data[]>([]);
 
   // input: The current input message from the user
   const [input, setInput] = useState<string>("");
@@ -115,18 +76,16 @@ function App() {
   // Ref for the job title input field
   const JobTitleRef = useRef<HTMLInputElement | null>(null);
 
-  //const messageQueueLengthRef = useRef<number>(messageQueueLength);
-
   // Focus the job title input field when the component mounts
   useEffect(() => {
     JobTitleRef.current?.focus();
   }, []);
 
   useEffect(() => {
-    console.log(state.length);
+    console.log(messages.length);
     //   messageQueueLengthRef.current = state.length;
-    setMessageQueueLength(state.length);
-  }, [state]);
+    setMessageQueueLength(messages.length);
+  }, [messages]);
 
   // Scroll to the bottom of the container whenever input changes
   useEffect(() => {
@@ -142,8 +101,7 @@ function App() {
       JobTitleRef.current?.focus();
       return;
     }
-    clearItems();
-
+    setMessages([]);
     setStartInterview(true); // Set the interview to started
     setLoading(true);
     setMessageQueueLength(0);
@@ -164,7 +122,7 @@ function App() {
     // const newItem = Map({ input: input, user: true });
     // setMessages((prevItems) => prevItems.push(newItem));
 
-    addItem({ text: input, user: true });
+    setMessages((messages) => { return [...messages, { text: input, user: true }]; });
 
     setInput(""); // Clear the input field
     setLoading(true);
@@ -190,13 +148,25 @@ function App() {
         const chunkText = chunk.text();
         text += chunkText;
         if (firstTime) {
-          addItem({ text: text, user: false });
+          setMessages((messages) => {
+            return [...messages, { text: text, user: false }];
+          });
           firstTime = false;
         }
         if (messageQueueLength === 0) {
           console.log("Second time");
-          updateItem(0, { text: text, user: false });
-        } else updateItem(messageQueueLength + 1, { text: text, user: false });
+          //updateItem(0, { text: text, user: false });
+          setMessages((messages) => {
+            return messages.map((item, index) =>
+              index === 0 ? { text: text, user: false } : item)
+          });
+
+        } else setMessages((messages) => {
+          return messages.map((item, index) =>
+            index === messageQueueLength + 1 ? { text: text, user: false } : item
+          )
+        });
+        
         console.log("message queue length in the for loop", messageQueueLength);
       }
       // return the final response from the AI for further processing
@@ -208,7 +178,7 @@ function App() {
       // add the error message to the messages list
       // const newItem = Map({ input: text, user: false });
       // setMessages((prevItems) => prevItems.push(newItem));
-      addItem({ text: text, user: false });
+      setMessages([...messages, { text: text, user: false }]);
       // return the error message for further processing
       return text;
     }
@@ -249,7 +219,7 @@ function App() {
 
       <div className="bg-white w-full max-w-lg rounded-lg overflow-hidden shadow-gray-700 shadow-lg">
         <div className="mt-1 p-4 h-96 overflow-y-scroll" ref={containerRef}>
-          {state?.map((msg, index) => (
+          {messages?.map((msg, index) => (
             <div
               key={index}
               className={`flex ${
