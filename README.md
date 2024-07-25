@@ -16,6 +16,11 @@ I've used the **systemInstruction** property to set the behavior of the AI. (Mor
 * [React Markdown](https://remarkjs.github.io/react-markdown/)
 * [CSS Loaders](https://css-loaders.com/)
 
+## Other resources
+* [Google Gemini API documentation](https://ai.google.dev/gemini-api/docs)
+* [Master the Gemini API: A Node.js tutorial with real examples - YOUTUBE VIDEO](https://www.youtube.com/watch?v=Z8F6FvMrN4o)
+* [Create ChatBot using React and Google Gemini API - YOUTUBE VIDEO](https://www.youtube.com/watch?v=KegN83jKh6c)
+
 ## Instructions
 
 Use the following command to clone the repository. 
@@ -42,8 +47,10 @@ Due to the insurance process redesign, management is expecting a lot of staff in
 Team members of this project are [Haley](https://github.com/justhaylz) and [Romesh](https://github.com/romeshl).
 
 ## Task 2. Use JIRA to manage team tasks
-
-
+JIRA board at the beginning of the project.
+![screenshot](./Mission%20Ready%20HQ%20-%20Mission%203%20-%20JIRA-Start.png)
+JIRA board at the end of the project.
+![screenshot](./Mission%20Ready%20HQ%20-%20Mission%203%20-%20JIRA-End.png)
 
 ## Task 3. Daily Standup
 Started the meetings from 22/07/2024. Had 4 meetings.
