@@ -7,6 +7,7 @@
   background-size: 26% 3px;
   animation: l2 1s infinite;
   margin: 0 auto;
+  margin-bottom: 20px;
 }
 @keyframes l2 {
   0%,

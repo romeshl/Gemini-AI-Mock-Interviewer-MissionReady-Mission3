@@ -3,14 +3,11 @@ import { FaPaperPlane } from "react-icons/fa";
 import ReactMarkdown from "react-markdown";
 import "./App.css";
 
-// Holds the number of questions to be asked from the interviewee
-const NUMBER_OF_QUESTIONS = 2;
+const NUMBER_OF_QUESTIONS = 2; // Holds the number of questions to be asked from the interviewee
 
-// Import the Google Generative AI library
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai"; // Import the Google Generative AI library
 
-// Initialize Google Generative AI with API key from environment variables
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY); // Initialize Google Generative AI with API key from environment variables
 
 // Configure the generative AI model with specific system instructions
 const model = genAI.getGenerativeModel({
@@ -51,41 +48,27 @@ const chat = model.startChat({
   },
 });
 
-
 // Main App component
 function App() {
   interface Data {
     text: string;
     user: boolean;
   }
-  
-  const [messages, setMessages] = useState<Data[]>([]);
 
-  // input: The current input message from the user
-  const [input, setInput] = useState<string>("");
-  // loading: Boolean to indicate if the AI is processing the input
-  const [loading, setLoading] = useState<boolean>(false);
-  // startInterview: Boolean to indicate if the interview has started
-  const [startInterview, setStartInterview] = useState<boolean>(false);
-  // jobTitle: The job title entered by the user
-  const [jobTitle, setJobTitle] = useState<string>("");
-  const [messageQueueLength, setMessageQueueLength] = useState<number>(0);
+  const [messages, setMessages] = useState<Data[]>([]); // Holds the messages between the user and the AI
+  const [input, setInput] = useState<string>(""); // input: The current input message from the user
+  const [loading, setLoading] = useState<boolean>(false); // indicate if the AI is processing the input
+  const [startInterview, setStartInterview] = useState<boolean>(false); // indicate if the interview has started
+  const [jobTitle, setJobTitle] = useState<string>(""); // holds the jobTitle entered by the user
+  const [textStream, setTextStream] = useState<string>(""); // holds the text stream from the AI
 
-  // Refs for the container for holding user and AI messages
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  // Ref for the job title input field
-  const JobTitleRef = useRef<HTMLInputElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null); // div holding user and AI messages
+  const JobTitleRef = useRef<HTMLInputElement | null>(null); // input field for job title
 
   // Focus the job title input field when the component mounts
   useEffect(() => {
     JobTitleRef.current?.focus();
   }, []);
-
-  useEffect(() => {
-    console.log(messages.length);
-    //   messageQueueLengthRef.current = state.length;
-    setMessageQueueLength(messages.length);
-  }, [messages]);
 
   // Scroll to the bottom of the container whenever input changes
   useEffect(() => {
@@ -98,104 +81,72 @@ function App() {
   // Begin the interview process
   const beginInterview = async () => {
     if (!jobTitle.trim()) {
+      // exit the function if the job title is empty
       JobTitleRef.current?.focus();
       return;
     }
-    setMessages([]);
+    setMessages([]); // Clear the messages list
     setStartInterview(true); // Set the interview to started
-    setLoading(true);
-    setMessageQueueLength(0);
-
-    const AIResponse = await getAIResponse(jobTitle);
-    setLoading(false);
-    // Handle any errors in the AI response
-    handleAIErrors(AIResponse);
+    setLoading(true); // show the loading animation
+    const AIResponse = await getAIResponse(jobTitle); // Get the AI response for the job title
+    setLoading(false); // hide the loading animation
+    handleAIErrors(AIResponse); // Handle any errors in the AI response
   };
 
   // Handle sending user messages and receiving AI responses
   const handleSendMessage = async () => {
-    // Check if the user input is empty
     if (!input.trim()) {
+      // exit the function if user input is empty
       return;
     }
-    // Add the user's message to the messages list
-    // const newItem = Map({ input: input, user: true });
-    // setMessages((prevItems) => prevItems.push(newItem));
-
-    setMessages((messages) => { return [...messages, { text: input, user: true }]; });
-
+    setMessages((messages) => { // Add the user input to the messages list
+      return [...messages, { text: input, user: true }];
+    });
     setInput(""); // Clear the input field
-    setLoading(true);
-    // Get the AI response for the user input
-    const AIResponse = await getAIResponse(input);
-    setLoading(false);
-    handleAIErrors(AIResponse);
+    setLoading(true); // Show the loading animation
+    const AIResponse = await getAIResponse(input); // Get the AI response for the user input
+    setLoading(false); // Hide the loading animation
+    handleAIErrors(AIResponse); // Handle any errors in the AI response
   };
 
   // Function to get AI response for a given input
   async function getAIResponse(chatInput: string): Promise<string> {
     try {
-      // Send the user input to the AI model
-      const result = await chat.sendMessageStream(chatInput);
-      // placeholder for the AI response
-      let text: string = "";
-      // this checks to see if it's the first time message list being updated
-      let firstTime = true;
-      // get the current length of the messages list to determine the index of the new message
-
-      // Iterate over the stream of responses
+      const result = await chat.sendMessageStream(chatInput); // Send the user input to the AI
+      let text: string = ""; // holds the response from the AI
       for await (const chunk of result.stream) {
-        const chunkText = chunk.text();
-        text += chunkText;
-        if (firstTime) {
-          setMessages((messages) => {
-            return [...messages, { text: text, user: false }];
-          });
-          firstTime = false;
-        }
-        if (messageQueueLength === 0) {
-          console.log("Second time");
-          //updateItem(0, { text: text, user: false });
-          setMessages((messages) => {
-            return messages.map((item, index) =>
-              index === 0 ? { text: text, user: false } : item)
-          });
-
-        } else setMessages((messages) => {
-          return messages.map((item, index) =>
-            index === messageQueueLength + 1 ? { text: text, user: false } : item
-          )
-        });
-        
-        console.log("message queue length in the for loop", messageQueueLength);
+        // Iterate over the stream of responses
+        const chunkText = chunk.text(); // Get the text from the current chunk
+        text += chunkText; // Append the text to the final response
+        setTextStream(text); // set the text stream to be displayed on the screen
       }
-      // return the final response from the AI for further processing
-      return text;
-      // handle any errors that occur during the AI response
-    } catch (error) {
-      console.error("Error sending message:", error);
+      setTextStream(""); // clear the text stream
+      setMessages((messages) => {
+        // Add the AI response to the messages list
+        return [...messages, { text: text, user: false }];
+      });
+      return text; // return the final response from the AI for further processing
+    }
+    catch (error) {
+      // Handle any errors in sending the message to the AI
+      console.error("Error sending message:", error); // Log the error to the console
       const text = "Error: unable to get a response from AI.";
-      // add the error message to the messages list
-      // const newItem = Map({ input: text, user: false });
-      // setMessages((prevItems) => prevItems.push(newItem));
-      setMessages([...messages, { text: text, user: false }]);
-      // return the error message for further processing
-      return text;
+      setMessages([...messages, { text: text, user: false }]); // Add the error message to the messages list
+      return text; // return the error message for further processing
     }
   }
 
   // Handle specific AI error messages
   function handleAIErrors(error: string) {
     if (
-      error.includes("Ending interview") ||
-      error.includes("Best of luck") ||
-      error.includes("Error")
+      error.includes("Ending interview") || // Check if the error message contains the ending interview message
+      error.includes("Best of luck") || // Check if the error message contains the best of luck message
+      error.includes("Error") // Check if the error message contains the error message
     ) {
-      setStartInterview(false);
-      JobTitleRef.current!.value = "";
-      setJobTitle("");
-      JobTitleRef.current?.focus();
-      setMessageQueueLength(0);
+      setStartInterview(false); // End the interview
+      JobTitleRef.current!.value = ""; // Clear the job title input field
+      setJobTitle(""); // Clear the job title state variable
+      JobTitleRef.current?.focus(); // Focus the job title input field
     }
   }
 
@@ -236,6 +187,11 @@ function App() {
             </div>
           ))}
           {loading && <div className={"loader"}></div>}
+          {textStream && (
+            <p className="inline-block rounded-lg p-2 shadow-md bg-gray-200">
+              {textStream}
+            </p>
+          )}
         </div>
         {!startInterview ? (
           <div className="flex justify-center p-4 border-t border-gray-200 bg-blue-50">
