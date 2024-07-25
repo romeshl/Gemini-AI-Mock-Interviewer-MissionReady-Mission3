@@ -48,10 +48,13 @@ Team members of this project are [Haley](https://github.com/justhaylz) and [Rome
 
 ## Task 2. Use JIRA to manage team tasks
 JIRA board at the beginning of the project.
+<br>
 ![screenshot](./Mission%20Ready%20HQ%20-%20Mission%203%20-%20JIRA-Start.png)
+<br>
 JIRA board at the end of the project.
+<br>
 ![screenshot](./Mission%20Ready%20HQ%20-%20Mission%203%20-%20JIRA-End.png)
-
+<br>
 ## Task 3. Daily Standup
 Started the meetings from 22/07/2024. Had 4 meetings.
 
