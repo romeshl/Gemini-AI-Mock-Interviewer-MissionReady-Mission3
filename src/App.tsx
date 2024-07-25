@@ -7,40 +7,21 @@ const NUMBER_OF_QUESTIONS = 2; // Holds the number of questions to be asked from
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Initialize Google Generative AI with API key from environment variables
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY); // Initialize Google Generative AI with API key from environment variables
 
 // Configure the generative AI model with specific instructions
 const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-pro",
-    systemInstruction: {
-        role: "Interviewer",
-        parts: [
-            { text: "Job role will be entered in the first user input" },
-            {
-                text:
-                    "ignore the greetings. if the first input is not a valid job role," +
-                    " send a message to the user and say 'Ending interview. Try again with a valid job title.'.",
-            },
-            {
-                text: "start by welcoming to the interview and asking the user's name and his background.",
-            },
-            {
-                text:
-                    "ask " +
-                    NUMBER_OF_QUESTIONS +
-                    " questions. one question at a time.",
-            },
-            { text: "don't mark the question like 'question 1' etc." },
-            {
-                text: "if the user doesn't answer the questions accordingly, ask the question again.",
-            },
-            {
-                text: "provide feedback about quality of the answers and where user can improve himself on.",
-            },
-            { text: "end with 'Best of luck' and the name of the user." },
-        ],
-    },
+  model: "gemini-1.5-flash",
+  systemInstruction:
+    "You are an interviewer for a job position. " +
+    " First input of the user must be the job role. If it's anything else output 'Ending interview. Please try again with a job title.'" +
+    "Greet and ask their name and background" +
+    "Proceed to ask the candidate " +
+    NUMBER_OF_QUESTIONS +
+    " questions, one at a time, without labeling them as 'question 1', 'question 2', etc. " +
+    "If a question is not answered appropriately, ask it again. " +
+    "Provide feedback on the quality of answers and areas for improvement. " +
+    "Conclude the interview with 'Best of luck' and the candidate's name.",
 });
 
 // Start a chat session with the generative AI model
@@ -83,48 +64,41 @@ function App() {
 
     // Begin the interview process
     async function beginInterview(): Promise<void> {
-        if (!jobTitle.trim()) {
+        if (!jobTitle.trim()) { // Exit if the job title is empty
             JobTitleRef.current?.focus();
             return;
         }
-        setMessages([]);
-        setStartInterview(true);
-        setLoading(true);
-        const AIResponse = await getAIResponse(jobTitle);
-
-        setMessages((messages) => [
+        setMessages([]); // Clear the user and AI response message list
+        setStartInterview(true); // starts the interview
+        setLoading(true); // Show loading animation
+        const AIResponse = await getAIResponse(jobTitle); // Get the AI's response
+        setMessages((messages) => [ // Add the AI's response to the messages array
             ...messages,
             { text: AIResponse, user: false },
         ]);
-        setLoading(false);
-        handleAIErrors(AIResponse);
+        setLoading(false); // Stop loading animation
+        handleAIErrors(AIResponse); // Handle specific AI errors
     }
 
     // Handle sending user messages and receiving AI responses
     const handleSendMessage = async () => {
         if (input.trim()) {
+          // Check if the input is not empty
+          setMessages((messages) => [
             // Add the user's message to the state
-            setMessages((messages) => [
-                ...messages,
-                { text: input, user: true },
-            ]);
-
-            // Clear the input field and set loading to true
-            setInput("");
-            setLoading(true);
-
-            // Get the AI's response
-            const AIResponse = await getAIResponse(input);
-
+            ...messages,
+            { text: input, user: true },
+          ]);
+          setInput(""); // Clear the input field and set loading to true
+          setLoading(true); // Show loading animation
+          const AIResponse = await getAIResponse(input); // Get the AI's response
+          setMessages((messages) => [
             // Add the AI's message to the state using the latest state
-            setMessages((messages) => [
-                ...messages,
-                { text: AIResponse, user: false },
-            ]);
-
-            // Set loading to false
-            setLoading(false);
-            handleAIErrors(AIResponse);
+            ...messages,
+            { text: AIResponse, user: false },
+          ]);
+          setLoading(false); // Stop loading animation
+          handleAIErrors(AIResponse); // Handle specific AI errors
         }
     };
 
@@ -135,23 +109,23 @@ function App() {
             error.includes("Best of luck") ||
             error.includes("Error")
         ) {
-            setStartInterview(false);
-            JobTitleRef.current!.value = "";
-            setJobTitle("");
-            JobTitleRef.current?.focus();
+            setStartInterview(false); // End the interview
+            JobTitleRef.current!.value = ""; // Clear the job title input field
+            setJobTitle(""); // Clear the job title state
+            JobTitleRef.current?.focus(); // Focus the job title input field
         }
     }
 
     // Function to get AI response for a given input
     async function getAIResponse(chatInput: string): Promise<string> {
         try {
-            const result = await chat.sendMessage(chatInput);
-            const response = result.response;
-            const text = response.text();
-            return text;
+            const result = await chat.sendMessage(chatInput); // Send the message to the AI model
+            const response = result.response; // Get the response from the AI model
+            const text = response.text(); // Get the text from the response
+            return text; // Return the text
         } catch (error) {
             console.error("Error sending message:", error);
-            return "Error: unable to get a response from AI.";
+            return "Error: unable to get a response from AI."; // Return an error message
         }
     }
 
