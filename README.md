@@ -11,6 +11,7 @@ I've used the **systemInstruction** property to set the behavior of the AI. (Mor
 ## Built with
 * [React Vite](https://vitejs.dev/guide/)
 * [TypeScript](https://www.typescriptlang.org/)
+* [TailWindCSS](https://tailwindcss.com/)
 * [Google Gemini API](https://aistudio.google.com/)
 * [React Icons](https://react-icons.github.io/react-icons/)
 * [React Markdown](https://remarkjs.github.io/react-markdown/)
