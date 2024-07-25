@@ -150,9 +150,9 @@ function App() {
           onChange={(e) => setJobTitle(e.target.value)}
           ref={JobTitleRef}
           onKeyDown={(e) => e.key === "Enter" && beginInterview()}
+          readOnly={startInterview}
         />
       </div>
-
       <div className="bg-white w-full max-w-lg rounded-lg overflow-hidden shadow-gray-700 shadow-lg">
         <div className="mt-1 p-4 h-96 overflow-y-scroll" ref={containerRef}>
           {messages?.map((msg, index) => (
@@ -198,8 +198,8 @@ function App() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                autoFocus
-                
+              autoFocus
+              readOnly={loading}
             />
             <button
               className="ml-2 bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-all"
