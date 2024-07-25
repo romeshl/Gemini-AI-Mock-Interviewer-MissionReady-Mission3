@@ -46,13 +46,13 @@ Team members of this project are [Haley](https://github.com/justhaylz) and [Rome
 
 
 ## Task 3. Daily Standup
-
+Started the meetings from 22/07/2024. Had 4 meetings.
 
 ## Task 4. Participate in Ideation Session
-SKIPPED
+SKIPPED as we don't have a UX designer.
 
 ## Task 5. Build a Mock Job Interview Application using Generative AI
-This repo contains all the APIs. You can access them by following [instructions](#instructions) above.
+This repo contains the project. You can access them by following [instructions](#instructions) above.
 
 ## Task 6. Present at Show and Tell
 Presenting online on 25/07/2024 from 6:00PM onwards.
