@@ -12,32 +12,16 @@ const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY); // Initializ
 // Configure the generative AI model with specific system instructions
 const model = genAI.getGenerativeModel({
   model: "gemini-1.5-flash",
-  systemInstruction: {
-    role: "Interviewer",
-    parts: [
-      { text: "Job role will be entered in the first user input" },
-      {
-        text:
-          "ignore the greetings. if the first input is not a valid job role," +
-          " send a message to the user and say 'Ending interview. Try again with a valid job title.'.",
-      },
-      {
-        text: "start by welcoming to the interview and asking the user's name and his background.",
-      },
-      {
-        text:
-          "ask " + NUMBER_OF_QUESTIONS + " questions. one question at a time.",
-      },
-      { text: "don't mark the question like 'question 1' etc." },
-      {
-        text: "if the user doesn't answer the questions accordingly, ask the question again.",
-      },
-      {
-        text: "provide feedback about quality of the answers and where user can improve himself on.",
-      },
-      { text: "end with 'Best of luck' and the name of the user." },
-    ],
-  },
+  systemInstruction:
+    "You are an interviewer for a job position. " +
+    " First input of the user must be the job role. If it's anything else output 'Ending interview. Please try again with a job title.'" +
+    "Greet and ask their name and background" +
+    "Proceed to ask the candidate " +
+    NUMBER_OF_QUESTIONS +
+    " questions, one at a time, without labeling them as 'question 1', 'question 2', etc. " +
+    "If a question is not answered appropriately, ask it again. " +
+    "Provide feedback on the quality of answers and areas for improvement. " +
+    "Conclude the interview with 'Best of luck' and the candidate's name.",
 });
 
 // Start a chat session with the generative AI model
@@ -99,7 +83,8 @@ function App() {
       // exit the function if user input is empty
       return;
     }
-    setMessages((messages) => { // Add the user input to the messages list
+    setMessages((messages) => {
+      // Add the user input to the messages list
       return [...messages, { text: input, user: true }];
     });
     setInput(""); // Clear the input field
@@ -126,8 +111,7 @@ function App() {
         return [...messages, { text: text, user: false }];
       });
       return text; // return the final response from the AI for further processing
-    }
-    catch (error) {
+    } catch (error) {
       // Handle any errors in sending the message to the AI
       console.error("Error sending message:", error); // Log the error to the console
       const text = "Error: unable to get a response from AI.";
@@ -147,15 +131,16 @@ function App() {
       JobTitleRef.current!.value = ""; // Clear the job title input field
       setJobTitle(""); // Clear the job title state variable
       JobTitleRef.current?.focus(); // Focus the job title input field
+      console.log(chat?.getHistory()); // Log the chat history to the console
     }
   }
 
   return (
     <div className="flex flex-col justify-center items-center h-screen bg-gradient-to-r from-blue-500 to-blue-900">
-      <h1 className="mb-5 font-bold text-[2rem] text-blue-50 [text-shadow:_3px_3px_0_rgb(0_0_0_/_20%)]">
+      <h1 className="mb-5 font-bold text-[2rem] text-blue-50 text-center [text-shadow:_3px_3px_0_rgb(0_0_0_/_20%)]">
         Gemini AI - Mock Interviewer
       </h1>
-      <div className="flex mb-3 p-4 bg-blue-50 rounded-lg w-[512px] gap-2 shadow-gray-700 shadow-md items-center">
+      <div className="flex mb-3 p-4 bg-blue-50 rounded-lg max-w-lg w-full gap-2 shadow-gray-700 shadow-md items-center">
         <h2 className="font-bold text-blue-800">Job Title: </h2>
         <input
           className="bg-white border border-gray-300 rounded-md w-[400px] p-1
@@ -213,7 +198,8 @@ function App() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-              autoFocus
+                autoFocus
+                
             />
             <button
               className="ml-2 bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-all"
