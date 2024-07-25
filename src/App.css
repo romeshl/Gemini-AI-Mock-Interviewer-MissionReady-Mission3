@@ -1,25 +1,30 @@
+/* HTML: <div class="loader"></div> */
 .loader {
   width: 50px;
-  aspect-ratio: 1;
+  aspect-ratio: 1.154;
+  clip-path: polygon(50% 0,100% 100%,0 100%);
   display: grid;
-  border-radius: 50%;
-  background: conic-gradient(#25b09b 25%,#f03355 0 50%,#514b82 0 75%,#ffa516 0);
-  animation: l22 2s infinite linear;
+  background: #3A89C9;
   margin: 0 auto;
 }
 .loader::before,
 .loader::after {
-   content: "";
-   grid-area: 1/1;
-   margin: 15%;
-   border-radius: 50%;
-   background: inherit;
-   animation: inherit;
+  content: "";
+  grid-area: 1/1;
+  background: inherit;
+  clip-path: inherit;
+  transform-origin: 50% 66%;
+  animation: l7-1 2s infinite; 
 }
-.loader::after {
-   margin: 25%;
-   animation-duration: 3s;
+.loader::before {
+  background: #9CC4E4;
+  animation: l7-2 2s infinite 1s; 
 }
-@keyframes l22 {
-  100% {transform: rotate(1turn)}
+@keyframes l7-1 {
+  0% ,99.9% {transform:scale(1)}
+  50%,99%   {transform:scale(0)}
+}
+@keyframes l7-2 {
+  0%,51%{transform:scale(1)}
+  50%   {transform:scale(0)}
 }
