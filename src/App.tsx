@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef} from "react";
+import { useState, useEffect, useRef } from "react";
 import { FaPaperPlane } from "react-icons/fa";
 import ReactMarkdown from "react-markdown";
 import "./App.css";
@@ -35,7 +35,7 @@ const chat = model.startChat({
 // Main App component
 function App() {
   interface Data {
-    text: string;
+    text: string | null;
     user: boolean;
   }
 
@@ -44,7 +44,6 @@ function App() {
   const [loading, setLoading] = useState<boolean>(false); // indicate if the AI is processing the input
   const [startInterview, setStartInterview] = useState<boolean>(false); // indicate if the interview has started
   const [jobTitle, setJobTitle] = useState<string>(""); // holds the jobTitle entered by the user
-  const [textStream, setTextStream] = useState<string>(""); // holds the text stream from the AI
 
   const containerRef = useRef<HTMLDivElement | null>(null); // div holding user and AI messages
   const JobTitleRef = useRef<HTMLInputElement | null>(null); // input field for job title
@@ -99,17 +98,31 @@ function App() {
     try {
       const result = await chat.sendMessageStream(chatInput); // Send the user input to the AI
       let text: string = ""; // holds the response from the AI
+      let firstTime = true; // indicates if it's the first time the AI is responding
       for await (const chunk of result.stream) {
         // Iterate over the stream of responses
         const chunkText = chunk.text(); // Get the text from the current chunk
         text += chunkText; // Append the text to the final response
-        setTextStream(text); // set the text stream to be displayed on the screen
+        //setTextStream(text); // set the text stream to be displayed on the screen
+        if (firstTime) {
+          setMessages((prevMessages) => [
+            // Adds an empty item to the message list
+            ...prevMessages,
+            { text: text, user: false },
+          ]);
+          firstTime = false; // Set firstTime to false after the first response
+        } else {
+          setMessages((prevMessages) => {
+            const lastMessageIndex = prevMessages.length - 1;
+            const updatedMessages = [...prevMessages];
+            updatedMessages[lastMessageIndex] = {
+              ...updatedMessages[lastMessageIndex],
+              text: text, // Update the last message with the new data
+            };
+            return updatedMessages; // Return the updated messages list
+          });
+        }
       }
-      setTextStream(""); // clear the text stream
-      setMessages((messages) => {
-        // Add the AI response to the messages list
-        return [...messages, { text: text, user: false }];
-      });
       return text; // return the final response from the AI for further processing
     } catch (error) {
       // Handle any errors in sending the message to the AI
@@ -172,11 +185,6 @@ function App() {
             </div>
           ))}
           {loading && <div className={"loader"}></div>}
-          {textStream && (
-            <p className="inline-block rounded-lg p-2 shadow-md bg-gray-200">
-              {textStream}
-            </p>
-          )}
         </div>
         {!startInterview ? (
           <div className="flex justify-center p-4 border-t border-gray-200 bg-blue-50">
